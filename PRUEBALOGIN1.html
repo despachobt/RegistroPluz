@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Reclamos Pluz</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f1f1f;
+    }
+
+    .contenedor {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+    }
+
+    .cabecera {
+      background: #1f4e79;
+      color: white;
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .cabecera h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .cabecera p {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 15px;
+    }
+
+    .contenido {
+      padding: 30px;
+    }
+
+    .login-box {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .grupo {
+      margin-bottom: 18px;
+    }
+
+    .grupo label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .grupo input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cfcfcf;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .grupo input:focus {
+      border-color: #1f4e79;
+      box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.12);
+    }
+
+    .acciones {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .btn-principal {
+      background: #1f4e79;
+      color: white;
+    }
+
+    .btn-principal:hover {
+      background: #163955;
+    }
+
+    .btn-secundario {
+      background: #e9eef3;
+      color: #1f1f1f;
+    }
+
+    .btn-secundario:hover {
+      background: #dfe7ee;
+    }
+
+    .mensaje {
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .error {
+      color: #c62828;
+    }
+
+    .ok {
+      color: #2e7d32;
+    }
+
+    .nota {
+      margin-top: 14px;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .oculto {
+      display: none;
+    }
+
+    .panel-superior {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: #f7f9fb;
+      border-bottom: 1px solid #dde4ea;
+    }
+
+    .panel-superior .texto {
+      font-size: 14px;
+      color: #334;
+    }
+
+    .iframe-box {
+      width: 100%;
+      height: 950px;
+      background: white;
+    }
+
+    .iframe-box iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    @media (max-width: 768px) {
+      .contenedor {
+        margin: 15px;
+      }
+
+      .cabecera h1 {
+        font-size: 24px;
+      }
+
+      .contenido {
+        padding: 20px;
+      }
+
+      .iframe-box {
+        height: 850px;
+      }
+
+      .panel-superior {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor">
+    <div class="cabecera">
+      <h1>REGISTRO DE RECLAMOS PLUZ</h1>
+      <p>Acceso restringido</p>
+    </div>
+
+    <div class="contenido" id="bloqueLogin">
+      <div class="login-box">
+
+        <div id="paso1">
+          <div class="grupo">
+            <label for="usuario">Usuario</label>
+            <input type="text" id="usuario" placeholder="Ingrese su usuario" autocomplete="off" />
+          </div>
+
+          <div class="grupo">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" placeholder="Ingrese su contraseña" autocomplete="off" />
+          </div>
+
+          <div class="acciones">
+            <button type="button" class="btn-principal" onclick="validarCredenciales()">Ingresar</button>
+            <button type="button" class="btn-secundario" onclick="limpiarCampos()">Limpiar</button>
+          </div>
+        </div>
+
+        <div id="paso2" class="oculto">
+          <div class="grupo">
+            <label for="token">Token</label>
+            <input type="password" id="token" placeholder="Ingrese su token" autocomplete="off" />
+          </div>
+
+          <div class="acciones">
+            <button type="button" class="btn-principal" onclick="validarToken()">Validar token</button>
+            <button type="button" class="btn-secundario" onclick="volverPaso1()">Volver</button>
+          </div>
+        </div>
+
+        <div id="mensaje" class="mensaje"></div>
+
+        <div class="nota">
+          Primero ingrese usuario y contraseña. Si son válidos, se solicitará el token.
+        </div>
+      </div>
+    </div>
+
+    <div id="bloqueFormulario" class="oculto">
+      <div class="panel-superior">
+        <div class="texto" id="usuarioActivoTexto"></div>
+        <button type="button" class="btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+
+      <div class="iframe-box" id="contenedorIframe"></div>
+    </div>
+  </div>
+
+  <script>
+    let accesoParcialConcedido = false;
+    let usuarioActivo = "";
+
+    const parte1 = "aHR0cHM6Ly9mb3Jtcy5vZmZpY2UuY29tL3Iv";
+    const parte2 = "QUtQRWtxa3M0Tg==";
+
+    function obtenerLinkFormulario() {
+      return atob(parte1) + atob(parte2);
+    }
+
+    const c1 = "cmVnaXN0cm8udXN1YXJpbzE=";
+    const c2 = "UGx1ejIwMjYq";
+    const c3 = "UExVWjIz";
+
+    function valorSeguro(v) {
+      return atob(v);
+    }
+
+    function limpiarCampos() {
+      document.getElementById("usuario").value = "";
+      document.getElementById("password").value = "";
+
+      const tok = document.getElementById("token");
+      if (tok) tok.value = "";
+
+      const mensaje = document.getElementById("mensaje");
+      mensaje.textContent = "";
+      mensaje.className = "mensaje";
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      const mensaje = document.getElementById("mensaje");
+      mensaje.textContent = texto;
+      mensaje.className = "mensaje";
+
+      if (tipo) {
+        mensaje.classList.add(tipo);
+      }
+    }
+
+    function validarCredenciales() {
+      const usuario = document.getElementById("usuario").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const usuarioValido = valorSeguro(c1);
+      const passwordValida = valorSeguro(c2);
+
+      if (!usuario || !password) {
+        mostrarMensaje("Debe ingresar usuario y contraseña.", "error");
+        return;
+      }
+
+      if (usuario === usuarioValido && password === passwordValida) {
+        accesoParcialConcedido = true;
+        usuarioActivo = usuario;
+
+        document.getElementById("paso1").classList.add("oculto");
+        document.getElementById("paso2").classList.remove("oculto");
+
+        mostrarMensaje("Credenciales correctas. Ahora ingrese el token.", "ok");
+      } else {
+        accesoParcialConcedido = false;
+        usuarioActivo = "";
+        mostrarMensaje("Usuario o contraseña incorrectos.", "error");
+      }
+    }
+
+    function validarToken() {
+      if (!accesoParcialConcedido) {
+        mostrarMensaje("Primero valide usuario y contraseña.", "error");
+        return;
+      }
+
+      const tokenIngresado = document.getElementById("token").value.trim();
+      const tokenValido = valorSeguro(c3);
+
+      if (!tokenIngresado) {
+        mostrarMensaje("Debe ingresar el token.", "error");
+        return;
+      }
+
+      if (tokenIngresado !== tokenValido) {
+        mostrarMensaje("Token incorrecto.", "error");
+        return;
+      }
+
+      mostrarMensaje("Acceso concedido.", "ok");
+      mostrarFormulario(usuarioActivo);
+    }
+
+    function volverPaso1() {
+      accesoParcialConcedido = false;
+      usuarioActivo = "";
+
+      document.getElementById("paso2").classList.add("oculto");
+      document.getElementById("paso1").classList.remove("oculto");
+      document.getElementById("token").value = "";
+
+      mostrarMensaje("", "");
+    }
+
+    function mostrarFormulario(usuario) {
+      const bloqueLogin = document.getElementById("bloqueLogin");
+      const bloqueFormulario = document.getElementById("bloqueFormulario");
+      const contenedorIframe = document.getElementById("contenedorIframe");
+      const usuarioActivoTexto = document.getElementById("usuarioActivoTexto");
+
+      const formUrl = obtenerLinkFormulario();
+
+      bloqueLogin.classList.add("oculto");
+      bloqueFormulario.classList.remove("oculto");
+
+      usuarioActivoTexto.textContent = "Usuario validado: " + usuario;
+
+      contenedorIframe.innerHTML = `
+        <iframe
+          id="miIframeForms"
+          src="${formUrl}"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer">
+        </iframe>
+      `;
+    }
+
+    function cerrarSesion() {
+      document.getElementById("bloqueFormulario").classList.add("oculto");
+      document.getElementById("bloqueLogin").classList.remove("oculto");
+
+      document.getElementById("contenedorIframe").innerHTML = "";
+      document.getElementById("usuarioActivoTexto").textContent = "";
+
+      document.getElementById("paso2").classList.add("oculto");
+      document.getElementById("paso1").classList.remove("oculto");
+
+      accesoParcialConcedido = false;
+      usuarioActivo = "";
+      limpiarCampos();
+    }
+
+    document.addEventListener("keydown", function(event) {
+      const loginVisible = !document.getElementById("bloqueLogin").classList.contains("oculto");
+      if (!loginVisible || event.key !== "Enter") return;
+
+      const paso2Visible = !document.getElementById("paso2").classList.contains("oculto");
+
+      if (paso2Visible) {
+        validarToken();
+      } else {
+        validarCredenciales();
+      }
+    });
+  </script>
+</body>
+</html>
