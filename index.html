@@ -137,6 +137,20 @@
       display: none;
     }
 
+    .captcha-box {
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #dde4ea;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+
+    .captcha-pregunta {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #1f4e79;
+    }
+
     .panel-superior {
       display: flex;
       justify-content: space-between;
@@ -210,6 +224,14 @@
             <input type="password" id="password" placeholder="Ingrese su contraseña" autocomplete="off" />
           </div>
 
+          <div id="captchaBloque" class="captcha-box oculto">
+            <div class="captcha-pregunta" id="captchaPregunta"></div>
+            <div class="grupo" style="margin-bottom:0;">
+              <label for="captchaRespuesta">Respuesta</label>
+              <input type="text" id="captchaRespuesta" placeholder="Resuelva la operación" autocomplete="off" />
+            </div>
+          </div>
+
           <div class="acciones">
             <button type="button" class="btn-principal" onclick="validarCredenciales()">Ingresar</button>
             <button type="button" class="btn-secundario" onclick="limpiarCampos()">Limpiar</button>
@@ -231,7 +253,7 @@
         <div id="mensaje" class="mensaje"></div>
 
         <div class="nota">
-          Primero ingrese usuario y contraseña. Si son válidos, se solicitará el token.
+          Primero ingrese usuario y contraseña. Después de 3 intentos fallidos, se activará una validación adicional.
         </div>
       </div>
     </div>
@@ -249,6 +271,9 @@
   <script>
     let accesoParcialConcedido = false;
     let usuarioActivo = "";
+    let intentosFallidos = 0;
+    let captchaActivo = false;
+    let captchaResultado = null;
 
     const parte1 = "aHR0cHM6Ly9mb3Jtcy5vZmZpY2UuY29tL3Iv";
     const parte2 = "QUtQRWtxa3M0Tg==";
@@ -272,6 +297,9 @@
       const tok = document.getElementById("token");
       if (tok) tok.value = "";
 
+      const captchaResp = document.getElementById("captchaRespuesta");
+      if (captchaResp) captchaResp.value = "";
+
       const mensaje = document.getElementById("mensaje");
       mensaje.textContent = "";
       mensaje.className = "mensaje";
@@ -287,6 +315,43 @@
       }
     }
 
+    function generarCaptcha() {
+      const a = Math.floor(Math.random() * 9) + 1;
+      const b = Math.floor(Math.random() * 9) + 1;
+      captchaResultado = a + b;
+      captchaActivo = true;
+
+      document.getElementById("captchaBloque").classList.remove("oculto");
+      document.getElementById("captchaPregunta").textContent = `Verificación: ¿cuánto es ${a} + ${b}?`;
+      document.getElementById("captchaRespuesta").value = "";
+    }
+
+    function ocultarCaptcha() {
+      captchaActivo = false;
+      captchaResultado = null;
+      document.getElementById("captchaBloque").classList.add("oculto");
+      document.getElementById("captchaRespuesta").value = "";
+    }
+
+    function validarCaptchaSiAplica() {
+      if (!captchaActivo) return true;
+
+      const respuesta = document.getElementById("captchaRespuesta").value.trim();
+
+      if (respuesta === "") {
+        mostrarMensaje("Debe resolver la validación adicional.", "error");
+        return false;
+      }
+
+      if (Number(respuesta) !== captchaResultado) {
+        mostrarMensaje("La validación adicional es incorrecta.", "error");
+        generarCaptcha();
+        return false;
+      }
+
+      return true;
+    }
+
     function validarCredenciales() {
       const usuario = document.getElementById("usuario").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -299,9 +364,21 @@
         return;
       }
 
+      if (intentosFallidos >= 3) {
+        if (!captchaActivo) {
+          generarCaptcha();
+        }
+
+        if (!validarCaptchaSiAplica()) {
+          return;
+        }
+      }
+
       if (usuario === usuarioValido && password === passwordValida) {
         accesoParcialConcedido = true;
         usuarioActivo = usuario;
+        intentosFallidos = 0;
+        ocultarCaptcha();
 
         document.getElementById("paso1").classList.add("oculto");
         document.getElementById("paso2").classList.remove("oculto");
@@ -310,7 +387,14 @@
       } else {
         accesoParcialConcedido = false;
         usuarioActivo = "";
-        mostrarMensaje("Usuario o contraseña incorrectos.", "error");
+        intentosFallidos++;
+
+        if (intentosFallidos >= 3) {
+          generarCaptcha();
+          mostrarMensaje("Usuario o contraseña incorrectos. Ahora también debe resolver la validación adicional.", "error");
+        } else {
+          mostrarMensaje(`Usuario o contraseña incorrectos. Intento ${intentosFallidos} de 3.`, "error");
+        }
       }
     }
 
