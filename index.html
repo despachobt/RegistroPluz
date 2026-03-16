@@ -238,22 +238,10 @@
           </div>
         </div>
 
-        <div id="paso2" class="oculto">
-          <div class="grupo">
-            <label for="token">Token</label>
-            <input type="password" id="token" placeholder="Ingrese su token" autocomplete="off" />
-          </div>
-
-          <div class="acciones">
-            <button type="button" class="btn-principal" onclick="validarToken()">Validar token</button>
-            <button type="button" class="btn-secundario" onclick="volverPaso1()">Volver</button>
-          </div>
-        </div>
-
         <div id="mensaje" class="mensaje"></div>
 
         <div class="nota">
-          Primero ingrese usuario y contraseña. Después de 3 intentos fallidos, se activará una validación adicional.
+          Ingrese usuario y contraseña. Después de 3 intentos fallidos, se activará una validación adicional.
         </div>
       </div>
     </div>
@@ -269,7 +257,6 @@
   </div>
 
   <script>
-    let accesoParcialConcedido = false;
     let usuarioActivo = "";
     let intentosFallidos = 0;
     let captchaActivo = false;
@@ -284,7 +271,6 @@
 
     const c1 = "cmVnaXN0cm8udXN1YXJpbzE=";
     const c2 = "UGx1ejIwMjYq";
-    const c3 = "UExVWjIz";
 
     function valorSeguro(v) {
       return atob(v);
@@ -293,9 +279,6 @@
     function limpiarCampos() {
       document.getElementById("usuario").value = "";
       document.getElementById("password").value = "";
-
-      const tok = document.getElementById("token");
-      if (tok) tok.value = "";
 
       const captchaResp = document.getElementById("captchaRespuesta");
       if (captchaResp) captchaResp.value = "";
@@ -375,17 +358,13 @@
       }
 
       if (usuario === usuarioValido && password === passwordValida) {
-        accesoParcialConcedido = true;
         usuarioActivo = usuario;
         intentosFallidos = 0;
         ocultarCaptcha();
 
-        document.getElementById("paso1").classList.add("oculto");
-        document.getElementById("paso2").classList.remove("oculto");
-
-        mostrarMensaje("Credenciales correctas. Ahora ingrese el token.", "ok");
+        mostrarMensaje("Credenciales correctas. Ingresando al formulario...", "ok");
+        mostrarFormulario(usuarioActivo);
       } else {
-        accesoParcialConcedido = false;
         usuarioActivo = "";
         intentosFallidos++;
 
@@ -396,40 +375,6 @@
           mostrarMensaje(`Usuario o contraseña incorrectos. Intento ${intentosFallidos} de 3.`, "error");
         }
       }
-    }
-
-    function validarToken() {
-      if (!accesoParcialConcedido) {
-        mostrarMensaje("Primero valide usuario y contraseña.", "error");
-        return;
-      }
-
-      const tokenIngresado = document.getElementById("token").value.trim();
-      const tokenValido = valorSeguro(c3);
-
-      if (!tokenIngresado) {
-        mostrarMensaje("Debe ingresar el token.", "error");
-        return;
-      }
-
-      if (tokenIngresado !== tokenValido) {
-        mostrarMensaje("Token incorrecto.", "error");
-        return;
-      }
-
-      mostrarMensaje("Acceso concedido.", "ok");
-      mostrarFormulario(usuarioActivo);
-    }
-
-    function volverPaso1() {
-      accesoParcialConcedido = false;
-      usuarioActivo = "";
-
-      document.getElementById("paso2").classList.add("oculto");
-      document.getElementById("paso1").classList.remove("oculto");
-      document.getElementById("token").value = "";
-
-      mostrarMensaje("", "");
     }
 
     function mostrarFormulario(usuario) {
@@ -463,10 +408,6 @@
       document.getElementById("contenedorIframe").innerHTML = "";
       document.getElementById("usuarioActivoTexto").textContent = "";
 
-      document.getElementById("paso2").classList.add("oculto");
-      document.getElementById("paso1").classList.remove("oculto");
-
-      accesoParcialConcedido = false;
       usuarioActivo = "";
       limpiarCampos();
     }
@@ -475,13 +416,7 @@
       const loginVisible = !document.getElementById("bloqueLogin").classList.contains("oculto");
       if (!loginVisible || event.key !== "Enter") return;
 
-      const paso2Visible = !document.getElementById("paso2").classList.contains("oculto");
-
-      if (paso2Visible) {
-        validarToken();
-      } else {
-        validarCredenciales();
-      }
+      validarCredenciales();
     });
   </script>
 </body>
